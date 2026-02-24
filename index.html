@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>M&G | Nuestra Unión ✨</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@200;300;400;600&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    
+
+    <style>
+        :root {
+            --gold: #bfa37e;
+            --gold-bright: #d4af37;
+            --dark: #1a1a1a;
+            --sand: #f8f7f4;
+            --stone: #7a7a7a;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--sand);
+            color: var(--dark);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+
+        /* Lienzo de Pétalos Animados */
+        #particles-js {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        /* Hero con Overlay para legibilidad */
+        .hero-container {
+            height: 100svh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+                        url('/IMG_2431.png'); 
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .hero-overlay {
+            padding: 3rem 2rem;
+            width: 90%;
+            max-width: 650px;
+            border: 1px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            z-index: 10;
+        }
+
+        /* Contador Estilo Tarjeta Elegante */
+        #countdown {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 2.5rem 0;
+        }
+
+        .countdown-item {
+            background: white;
+            color: var(--dark);
+            padding: 15px;
+            min-width: 85px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border-bottom: 3px solid var(--gold-bright);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .countdown-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 1;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .countdown-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 5px;
+            color: var(--stone);
+        }
+
+        /* Animaciones */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Galería */
+        .gallery-item {
+            overflow: hidden;
+            position: relative;
+            background: #e5e5e5;
+            border-radius: 8px;
+            box-shadow: 0 15px 35px -15px rgba(0,0,0,0.15);
+        }
+
+        .gallery-item img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: transform 1.5s ease;
+        }
+
+        .gallery-item:hover img { transform: scale(1.1); }
+
+        /* Botones */
+        .btn-luxury {
+            position: relative;
+            padding: 1rem 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.4s ease;
+            border: 1px solid var(--dark);
+            background: white;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-luxury:hover {
+            background: var(--dark);
+            color: white;
+        }
+
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+    </style>
+</head>
+
+
+
+<body>
+
+    <canvas id="particles-js"></canvas>
+
+    <header class="hero-container text-white text-center">
+        <div class="hero-overlay reveal active">
+            <p class="uppercase tracking-[0.6em] md:tracking-[1em] text-[10px] mb-6 font-semibold">✨ Nuestra Unión ✨</p>
+            <h1 class="font-serif text-5xl md:text-8xl mb-4 font-light italic leading-tight">
+                Miguel <span class="block md:inline text-2xl md:text-5xl font-sans not-italic text-amber-200">&</span> Geraldyne
+            </h1>
+            
+            <div id="countdown">
+                <div class="countdown-item">
+                    <span id="days" class="countdown-number">00</span>
+                    <span class="countdown-label">Días</span>
+                </div>
+                <div class="countdown-item">
+                    <span id="hours" class="countdown-number">00</span>
+                    <span class="countdown-label">Horas</span>
+                </div>
+                <div class="countdown-item">
+                    <span id="minutes" class="countdown-number">00</span>
+                    <span class="countdown-label">Mins</span>
+                </div>
+            </div>
+
+            <p class="tracking-[0.4em] text-xs md:text-sm font-light border-t border-white/30 pt-8 inline-block">
+                02 . MAYO . 2026
+            </p>
+        </div>
+        
+        <div class="absolute bottom-12 flex flex-col items-center floating">
+            <div class="w-[1px] h-12 bg-white/40 mb-2"></div>
+            <span class="text-[9px] uppercase tracking-widest opacity-60">Desliza</span>
+        </div>
+    </header>
+
+    <section class="py-24 px-6 max-w-4xl mx-auto text-center reveal">
+        <span class="text-3xl mb-4 block">🕊️</span>
+        <h2 class="font-serif text-4xl md:text-6xl mb-8 leading-tight italic">Un camino que decidimos recorrer juntos</h2>
+        <div class="w-16 h-[1px] bg-amber-400 mx-auto mb-8"></div>
+        <p class="text-stone-500 leading-relaxed md:leading-loose font-light text-lg max-w-2xl mx-auto">
+            Hay momentos que cambian la vida para siempre. Compartir este inicio con las personas que amamos es el mayor de los regalos. Te esperamos para celebrar el amor en su estado más puro.
+        </p>
+    </section>
+
+</section>
+
+<section class="py-20 px-10 w-full relative bg-stone-50">
+
+  <div class="text-center mb-24">
+    <h2 class="text-6xl font-serif text-rose-400 tracking-widest italic">
+      Galeria
+    </h2>
+    <div class="w-40 h-[1px] bg-rose-200 mx-auto my-8"></div>
+    <p class="text-gray-400 text-sm tracking-[0.3em] uppercase font-light">
+      Momentos que se quedan grabados en el alma
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-12 w-full">
+
+    <div class="bg-white p-5 shadow-2xl shadow-rose-200/30 transform -rotate-3 hover:rotate-0 hover:scale-110 transition-all duration-500 cursor-pointer border border-gray-50">
+      <img src="/IMG_2348.png" class="w-full aspect-[4/5] object-cover mb-4" onclick="openLightbox(this.src)">
+      <p class="text-center font-serif text-rose-400 text-lg">Donde todo empezó</p>
+    </div>
+
+    <div class="bg-white p-5 shadow-2xl shadow-rose-200/30 transform rotate-2 hover:rotate-0 hover:scale-110 transition-all duration-500 cursor-pointer border border-gray-50">
+      <img src="/IMG_2487.png" class="w-full aspect-[4/5] object-cover mb-4" onclick="openLightbox(this.src)">
+      <p class="text-center font-serif text-rose-400 text-lg">Tu sonrisa</p>
+    </div>
+
+    <div class="bg-white p-5 shadow-2xl shadow-rose-200/30 transform -rotate-1 hover:rotate-0 hover:scale-110 transition-all duration-500 cursor-pointer border border-gray-50">
+      <img src="/IMG_2465.png" class="w-full aspect-[4/5] object-cover mb-4" onclick="openLightbox(this.src)">
+      <p class="text-center font-serif text-rose-400 text-lg">Aquella tarde</p>
+    </div>
+
+    <div class="bg-white p-5 shadow-2xl shadow-rose-200/30 transform rotate-6 hover:rotate-0 hover:scale-110 transition-all duration-500 cursor-pointer border border-gray-50">
+      <img src="/IMG_2509.png" class="w-full aspect-[4/5] object-cover mb-4" onclick="openLightbox(this.src)">
+      <p class="text-center font-serif text-rose-400 text-lg">Juntos</p>
+    </div>
+
+    <div class="bg-white p-5 shadow-2xl shadow-rose-200/30 transform -rotate-2 hover:rotate-0 hover:scale-110 transition-all duration-500 cursor-pointer border border-gray-50">
+      <img src="/IMG_2460.png" class="w-full aspect-[4/5] object-cover mb-4" onclick="openLightbox(this.src)">
+      <p class="text-center font-serif text-rose-400 text-lg">Para siempre</p>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- Lightbox romántico -->
+<div id="lightbox"
+  class="fixed inset-0 bg-white/95 backdrop-blur-md hidden items-center justify-center z-50 transition-opacity duration-300">
+
+  <div class="relative">
+    <img id="lightboxImg"
+      class="max-w-[90vw] max-h-[85vh] rounded-3xl shadow-2xl border border-rose-100 animate-fadeIn">
+  </div>
+
+</div>
+
+<style>
+  .romantic-card {
+    overflow: hidden;
+    border-radius: 2rem;
+    background: white;
+    box-shadow: 0 20px 40px rgba(236, 72, 153, 0.08);
+    transition: all .6s ease;
+    cursor: pointer;
+  }
+
+  .romantic-card img {
+    width: 100%;
+    height: 420px;
+    object-fit: cover;
+    transition: transform 1s ease;
+  }
+
+  .romantic-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 30px 60px rgba(236, 72, 153, 0.15);
+  }
+
+  .romantic-card:hover img {
+    transform: scale(1.07);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn .4s ease;
+  }
+</style>
+
+
+
+<!-- LIGHTBOX MODERNO -->
+<div id="lightbox"
+  class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center z-50 transition-opacity duration-300">
+
+  <img id="lightboxImg"
+    class="max-w-[90%] max-h-[85vh] rounded-2xl shadow-2xl animate-fadeIn">
+
+</div>
+
+<style>
+  .gallery-item {
+    overflow: hidden;
+    border-radius: 1.5rem;
+    cursor: pointer;
+    transition: transform .5s ease, box-shadow .5s ease;
+  }
+
+  .gallery-item img {
+    width: 100%;
+    height: 420px;
+    object-fit: cover;
+    transition: transform .8s ease;
+  }
+
+  .gallery-item:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+  }
+
+  .gallery-item:hover img {
+    transform: scale(1.08);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn .3s ease;
+  }
+</style>
+
+<script>
+  const lightbox = document.getElementById("lightbox");
+  const lightboxImg = document.getElementById("lightboxImg");
+
+  function openLightbox(src) {
+    lightboxImg.src = src;
+    lightbox.classList.remove("hidden");
+    lightbox.classList.add("flex");
+  }
+
+  lightbox.addEventListener("click", () => {
+    lightbox.classList.add("hidden");
+    lightbox.classList.remove("flex");
+  });
+</script>
+
+    <section class="bg-white py-24 border-y border-stone-100">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-16">
+                
+                <div class="text-center reveal">
+                    <div class="bg-amber-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="map-pin" class="w-6 h-6 text-amber-600"></i>
+                    </div>
+                    <h3 class="font-serif text-3xl mb-4 italic">Ubicación 📍</h3>
+                    <p class="text-stone-500 font-light text-sm mb-8 leading-relaxed">
+                        <b>Finca El Valle del Jordán</b><br>
+                        Yangas, Lima | 3:00 PM
+                    </p>
+                    <a href="#" class="btn-luxury text-[9px]">Google Maps</a>
+                </div>
+
+                <div class="text-center reveal delay-75">
+                    <div class="bg-rose-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="sparkles" class="w-6 h-6 text-rose-400"></i>
+                    </div>
+                    <h3 class="font-serif text-3xl mb-4 italic">Vestimenta 👗</h3>
+                    <p class="text-stone-500 font-light text-sm leading-relaxed">
+                        <b>Formal</b><br>
+                        Caballeros: Traje completo<br>Damas: Vestido largo
+                    </p>
+                </div>
+
+                <div class="text-center reveal delay-150">
+                    <div class="bg-stone-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="heart" class="w-6 h-6 text-stone-400"></i>
+                    </div>
+                    <h3 class="font-serif text-3xl mb-4 italic">Aclaratoria 🥂</h3>
+                    <p class="text-stone-500 font-light text-sm leading-relaxed">
+                        Hemos decidido celebrar nuestra unión en un entorno de <b>solo adultos</b>.<br>
+                        ¡Gracias por comprender!
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="py-32 px-6 bg-stone-50">
+        <div class="max-w-3xl mx-auto text-center">
+            <div class="reveal mb-20">
+                <h2 class="font-serif text-4xl mb-6 italic">Mesa de Regalos 🎁</h2>
+                <p class="text-stone-500 font-light mb-10 italic">"Tu presencia es nuestro mejor regalo, pero si deseas tener un detalle..."</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <div class="flex justify-center my-12 reveal">
+    <a href="https://www.noviosfalabella.com.pe/public/resultadoBusquedaNovios.do?categoria=todas&idsJerarquias=&nombreCategoria=&nivelCategoria=&codigoEvento=&dvEvento=&radTipoBusqueda=1&txtBusqueda=728804-02" 
+       target="_blank" 
+       class="btn-luxury">
+       Falabella Novios
+    </a>
+</div>
+
+
+                </div>
+            </div>
+
+            <div class="bg-white p-8 md:p-16 reveal shadow-xl rounded-lg border border-stone-200">
+    <h2 class="font-serif text-5xl mb-4 italic">Invitados 💌</h2>
+    <p class="text-stone-400 uppercase tracking-widest text-[9px] mb-12">Confirma antes del 01 de Abril</p>
+    <label class="text-xs uppercase tracking-widest">Busca tu nombre</label>
+    <input type="text" id="inputNombre"
+class="w-full border-b py-3 text-xl outline-none">
+<ul id="listaResultados"
+class="hidden border bg-gray-50 max-h-40 overflow-y-auto mt-2"></ul>
+</div>
+
+<div id="datosInvitado"
+class="hidden border-t pt-6 mt-6">
+
+<h3 id="nombreConfirmado"
+class="font-serif text-2xl mb-2"></h3>
+
+<p id="infoCupos"
+class="text-amber-600 font-semibold mb-4"></p>
+
+<div id="listaAcompanantes"
+class="space-y-2 mb-6"></div>
+
+<select id="selectAsistencia"
+class="w-full border-b py-2 mb-6">
+<option value="si">Sí asistiré</option>
+<option value="no">No podré asistir</option>
+</select>
+
+<button onclick="confirmarAsistencia()"
+class="bg-black text-white w-full py-3 rounded">
+Confirmar
+</button>
+       
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBeVis1IYntFgRenEbKqurxF0tt3Jst-SY",
+  authDomain: "boda-aa69f.firebaseapp.com",
+  databaseURL: "https://boda-aa69f-default-rtdb.firebaseio.com",
+  projectId: "boda-aa69f",
+  storageBucket: "boda-aa69f.firebasestorage.app",
+  messagingSenderId: "308430579069",
+  appId: "1:308430579069:web:2ff283e85030b172aed814",
+  measurementId: "G-JE68WZXG4S"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+signInAnonymously(auth);
+
+const invitadosRef = ref(db, "invitados");
+
+let listaInvitados = [];
+let invitadoActualId = null;
+
+// ==========================
+// CARGA EN TIEMPO REAL
+// ==========================
+onValue(invitadosRef, (snapshot) => {
+
+  listaInvitados = [];
+
+  snapshot.forEach(child => {
+    listaInvitados.push({
+      id: child.key,
+      ...child.val()
+    });
+  });
+
+  // 🔥 si hay invitado seleccionado, lo refresca automáticamente
+  if (invitadoActualId) {
+    const actualizado = listaInvitados.find(i => i.id === invitadoActualId);
+    if (actualizado) {
+      renderInvitado(actualizado);
+    }
+  }
+
+});
+
+// ==========================
+// BUSCADOR
+// ==========================
+
+const inputNombre = document.getElementById("inputNombre");
+const listaResultados = document.getElementById("listaResultados");
+const datosInvitado = document.getElementById("datosInvitado");
+const nombreConfirmado = document.getElementById("nombreConfirmado");
+const infoCupos = document.getElementById("infoCupos");
+const listaAcompanantesDiv = document.getElementById("listaAcompanantes");
+
+inputNombre.addEventListener("input", (e) => {
+
+  const texto = e.target.value.toLowerCase();
+  listaResultados.innerHTML = "";
+
+  if (texto.length < 2) {
+    listaResultados.classList.add("hidden");
+    return;
+  }
+
+  const filtrados = listaInvitados.filter(i =>
+    i.nombre.toLowerCase().includes(texto)
+  );
+
+  if (filtrados.length === 0) {
+    listaResultados.classList.add("hidden");
+    return;
+  }
+
+  listaResultados.classList.remove("hidden");
+
+  filtrados.forEach(inv => {
+    const li = document.createElement("li");
+    li.textContent = inv.nombre;
+    li.className = "p-3 hover:bg-amber-50 cursor-pointer";
+    li.onclick = () => seleccionarInvitado(inv);
+    listaResultados.appendChild(li);
+  });
+
+});
+
+// ==========================
+// SELECCIONAR
+// ==========================
+
+function seleccionarInvitado(invitado) {
+  invitadoActualId = invitado.id;
+  inputNombre.value = invitado.nombre;
+  listaResultados.classList.add("hidden");
+  renderInvitado(invitado);
+}
+
+function renderInvitado(invitado) {
+
+  nombreConfirmado.textContent = invitado.nombre;
+
+  const entradas = invitado.entradas || 1;
+  infoCupos.textContent = `Tienes ${entradas} lugares reservados contando el tuyo.`;
+
+  listaAcompanantesDiv.innerHTML = "";
+
+  const acompanantes = invitado.acompanantes || [];
+
+  if (acompanantes.length === 0) {
+    listaAcompanantesDiv.innerHTML =
+      `<p class="text-gray-400 text-sm">Sin acompañantes</p>`;
+  } else {
+
+    acompanantes.forEach((a, index) => {
+
+      const div = document.createElement("div");
+      div.className = "flex justify-between bg-gray-100 p-3 rounded";
+
+      div.innerHTML = `
+        <span>${a.nombre}</span>
+        <button class="text-red-500 text-xs">Eliminar</button>
+      `;
+
+      div.querySelector("button").addEventListener("click", () => {
+        eliminarAcompanante(index);
+      });
+
+      listaAcompanantesDiv.appendChild(div);
+    });
+  }
+
+  datosInvitado.classList.remove("hidden");
+}
+
+// ==========================
+// ELIMINAR ACOMPAÑANTE (ARREGLADO)
+// ==========================
+
+function eliminarAcompanante(index) {
+
+  const invitado = listaInvitados.find(i => i.id === invitadoActualId);
+  if (!invitado) return;
+
+  const acompanantes = invitado.acompanantes
+    ? [...invitado.acompanantes]
+    : [];
+
+  const nombreAEliminar = acompanantes[index]?.nombre || "este acompañante";
+
+  // 🔒 CONFIRMACIÓN DE SEGURIDAD
+  const confirmar = confirm(
+    `¿Estás seguro de eliminar a ${nombreAEliminar}?\n\nEsta acción no se puede deshacer.`
+  );
+
+  if (!confirmar) return; // ❌ Si cancela, no hace nada
+
+  acompanantes.splice(index, 1);
+
+  update(ref(db, "invitados/" + invitadoActualId), {
+    acompanantes: acompanantes,
+    entradas: 1 + acompanantes.length
+  });
+}
+
+// ==========================
+// CONFIRMAR
+// ==========================
+
+window.confirmarAsistencia = function() {
+
+  if (!invitadoActualId) return;
+
+  const asistencia =
+    document.getElementById("selectAsistencia").value === "si";
+
+  update(ref(db, "invitados/" + invitadoActualId), {
+    confirmado: asistencia
+  });
+
+  alert("Confirmación guardada ❤️");
+};
+</script>
+
+<style>
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+
+
+
+
+
+        </div>
+    </section>
+
+
+
+<audio id="bgMusic" loop>
+    <source src="audio.mp3" type="audio/mpeg">
+</audio>
+
+<div id="mainControl" class="fixed bottom-6 left-6 z-50 flex items-center bg-stone-950 p-2 rounded-full shadow-2xl border border-amber-900/30 gap-3 group transition-all duration-700 hover:pr-5">
+    
+    <button id="musicBtn" class="relative w-12 h-12 flex items-center justify-center bg-stone-900 text-amber-500 rounded-full overflow-hidden border border-amber-500/20 active:scale-95 transition-transform">
+        <div id="statusIcon" class="z-10 bg-stone-900 rounded-full p-1">
+            <svg id="iconPlay" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="iconPause" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </div>
+
+        <div id="waveContainer" class="absolute inset-0 flex items-end justify-center gap-[3px] pb-3 opacity-50">
+            <span class="wave-bar bg-amber-500 w-[3px]"></span>
+            <span class="wave-bar bg-amber-600 w-[3px]"></span>
+            <span class="wave-bar bg-amber-400 w-[3px]"></span>
+            <span class="wave-bar bg-amber-500 w-[3px]"></span>
+        </div>
+    </button>
+
+    <div class="flex flex-col overflow-hidden transition-all duration-500 w-0 group-hover:w-28 opacity-0 group-hover:opacity-100">
+        <span class="text-[7px] uppercase tracking-[0.3em] text-amber-500 font-bold mb-1">Nuestra Música</span>
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.5" 
+            class="w-20 h-[2px] bg-stone-800 rounded-lg appearance-none cursor-pointer accent-amber-500">
+    </div>
+</div>
+
+<style>
+    .wave-bar {
+        height: 4px;
+        border-radius: 2px;
+    }
+
+    /* Animación activa */
+    .playing .wave-bar {
+        animation: dance 0.8s infinite alternate;
+    }
+
+    @keyframes dance {
+        0% { height: 4px; transform: translateY(0); }
+        100% { height: 18px; transform: translateY(-2px); }
+    }
+
+    .wave-bar:nth-child(1) { animation-delay: 0.1s; }
+    .wave-bar:nth-child(2) { animation-delay: 0.3s; }
+    .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+    .wave-bar:nth-child(4) { animation-delay: 0.4s; }
+
+    #volumeSlider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 10px; height: 10px;
+        background: #f59e0b;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+</style>
+
+<script>
+    const audio = document.getElementById('bgMusic');
+    const btn = document.getElementById('musicBtn');
+    const vol = document.getElementById('volumeSlider');
+    const iconPlay = document.getElementById('iconPlay');
+    const iconPause = document.getElementById('iconPause');
+    const musicBtnContainer = document.getElementById('musicBtn');
+
+    audio.volume = 0.5; // Volumen al 50%
+    let isPlaying = false;
+
+    // Función para activar la música
+    function playMusic() {
+        audio.play().then(() => {
+            isPlaying = true;
+            musicBtnContainer.classList.add('playing');
+            iconPlay.classList.add('hidden');
+            iconPause.classList.remove('hidden');
+        }).catch(error => {
+            console.log("Esperando interacción del usuario...");
+        });
+    }
+
+    // 1. Intentar sonar al cargar
+    window.addEventListener('load', playMusic);
+
+    // 2. Si no pudo por el bloqueo, sonar al primer clic en la pantalla
+    document.addEventListener('click', () => {
+        if (!isPlaying) playMusic();
+    }, { once: true }); // Solo se ejecuta la primera vez
+
+    // Control manual (Botón)
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Evita que el clic del documento interfiera
+        if (isPlaying) {
+            audio.pause();
+            musicBtnContainer.classList.remove('playing');
+            iconPlay.classList.remove('hidden');
+            iconPause.classList.add('hidden');
+        } else {
+            audio.play();
+            musicBtnContainer.classList.add('playing');
+            iconPlay.classList.add('hidden');
+            iconPause.classList.remove('hidden');
+        }
+        isPlaying = !isPlaying;
+    });
+
+    vol.addEventListener('input', (e) => {
+        audio.volume = e.target.value;
+    });
+</script>
+
+
+
+
+
+    <footer class="py-20 text-center bg-white border-t border-stone-100">
+        <p class="font-serif text-3xl italic mb-4">M <span class="text-stone-300">&</span> G</p>
+        <p class="text-stone-400 text-[10px] uppercase tracking-[0.5em]">02 . 05 . 2026 | Hecho con amor</p>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // Partículas (Brillos Dorados)
+        const canvas = document.getElementById('particles-js');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function initParticles() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            for (let i = 0; i < 40; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 1,
+                    speed: Math.random() * 0.5 + 0.2,
+                    opacity: Math.random() * 0.5
+                });
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.y += p.speed;
+                if (p.y > canvas.height) p.y = -10;
+                ctx.fillStyle = `rgba(212, 175, 55, ${p.opacity})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', initParticles);
+        initParticles();
+        animate();
+
+        // Countdown
+        function updateCountdown() {
+            const weddingDate = new Date("May 02, 2026 15:00:00").getTime();
+            const now = new Date().getTime();
+            const diff = weddingDate - now;
+
+            if (diff > 0) {
+                document.getElementById('days').innerText = Math.floor(diff / (1000 * 60 * 60 * 24));
+                document.getElementById('hours').innerText = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                document.getElementById('minutes').innerText = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            }
+        }
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        // Reveal al scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
