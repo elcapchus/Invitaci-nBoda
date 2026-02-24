@@ -134,7 +134,7 @@
     <canvas id="particles-js"></canvas>
 
     <!-- HERO SECTION -->
-<header class="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-stone-900 text-white">
+<header data-section="hero" class="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-stone-900 text-white">
     
     <div class="absolute inset-0 z-0">
         <img src="/IMG_2431.png" alt="Miguel y Geraldyne" class="w-full h-full object-cover opacity-50 scale-105 animate-slow-zoom">
@@ -214,7 +214,7 @@
 </style>
 
     <!-- INTRODUCCIÓN -->
-<section class="relative py-28 px-6 overflow-hidden bg-[#faf9f6]">
+<section data-section="intro" class="relative py-28 px-6 overflow-hidden bg-[#faf9f6]">
     <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] select-none pointer-events-none">
         <p class="font-serif italic text-[15vw] leading-none text-stone-900 whitespace-nowrap">
             Miguel & Geraldyne
@@ -267,7 +267,7 @@
 </section>
 
     <!-- GALERÍA -->
-<section class="relative py-32 px-6 bg-[#fdfcf9] overflow-hidden">
+<section data-section="gallery" class="relative py-32 px-6 bg-[#fdfcf9] overflow-hidden">
     
     <div class="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]"></div>
     
@@ -342,7 +342,7 @@
 </section>
 
     <!-- DETALLES -->
-    <section class="relative py-40 bg-[#fdfcf9] overflow-hidden">
+    <section data-section="details" class="relative py-40 bg-[#fdfcf9] overflow-hidden">
     
     <div class="absolute top-10 left-[-5%] opacity-[0.02] pointer-events-none">
         <span class="text-[30vw] font-serif font-black text-stone-900 leading-none"></span>
@@ -403,7 +403,7 @@
                     <span class="text-amber-300 font-serif italic text-4xl mb-4 block">03.</span>
                     <h3 class="font-serif text-3xl mb-6 text-stone-800 italic">Niños</h3>
                     <p class="text-stone-600 font-light text-sm leading-relaxed mb-6">
-                        Deseamos que este día sea un descanso para ustedes. Hemos optado por una celebración de 
+                        Deseamos que este día sea un descanso y disfrute. Hemos optado por una celebración de 
                         <span class="font-bold text-stone-800">Solo Adultos</span>.
                     </p>
                     <div class="flex gap-2">
@@ -424,7 +424,7 @@
 </style>
 
     <!-- REGALOS -->
-<section class="relative py-40 bg-[#fdfcf9] overflow-hidden border-b border-stone-100">
+<section data-section="giff" class="relative py-40 bg-[#fdfcf9] overflow-hidden border-b border-stone-100">
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.02] pointer-events-none">
         <span class="text-[25vw] font-serif italic text-stone-900 leading-none whitespace-nowrap">Gratitud</span>
     </div>
@@ -456,7 +456,7 @@
 </section>
 
 <!-- confirmación -->
-<section class="relative py-40 bg-[#faf8f5]">
+<section data-section="rsvp" class="relative py-40 bg-[#faf8f5]">
     <div class="absolute top-0 right-0 w-1/3 h-full bg-[#f3f0eb] [clip-path:polygon(25%_0%,100%_0%,100%_100%,0%_100%)] hidden lg:block"></div>
 
     <div class="max-w-5xl mx-auto px-6 relative z-10">
@@ -564,6 +564,139 @@
         color: #b45309; /* amber-700 */
     }
 </style>
+
+    <!-- ROBOT GUIA-->
+<div id="robotMaster" class="fixed bottom-6 right-6 z-[9999] flex flex-col items-center animate-bounce-slow">
+    
+    <div id="speechBubble" class="mb-4 bg-white/95 backdrop-blur-sm border-2 border-pink-300 p-3 rounded-2xl shadow-xl text-stone-700 text-sm font-bold opacity-0 transition-all duration-500 scale-90 max-w-[180px] text-center relative italic">
+        <div id="speechText">Cargando...</div>
+        <div class="absolute -bottom-2 right-8 w-4 h-4 bg-white border-r-2 border-b-2 border-pink-300 rotate-45"></div>
+    </div>
+
+    <div id="robotCharacter" class="cursor-pointer group relative">
+        <div class="absolute -top-6 left-1/2 -translate-x-1/2 flex flex-col items-center">
+            <div id="robotAntenna" class="text-xs animate-pulse">❤️</div>
+            <div class="w-0.5 h-3 bg-pink-400"></div>
+        </div>
+
+        <div id="robotFace" class="w-20 h-20 bg-gradient-to-br from-pink-100 to-rose-300 rounded-[30px] shadow-2xl flex items-center justify-center border-b-4 border-rose-400 transition-all duration-700 ease-in-out">
+            <div id="robotEmoji" class="text-4xl transition-all duration-500 transform group-hover:scale-125">
+                😊
+            </div>
+        </div>
+        <div class="w-16 h-2 bg-black/10 rounded-[100%] mt-4 blur-md mx-auto"></div>
+    </div>
+</div>
+
+<style>
+    @keyframes bounce-slow {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-12px); }
+    }
+    .animate-bounce-slow {
+        animation: bounce-slow 3s ease-in-out infinite;
+    }
+</style>
+
+<script>
+const face = document.getElementById('robotFace');
+const emoji = document.getElementById('robotEmoji');
+const speechText = document.getElementById('speechText');
+const speechBubble = document.getElementById('speechBubble');
+const antenna = document.getElementById('robotAntenna');
+
+const sectionThemes = {
+    'hero': {
+        msg: "¡Bienvenidos! ❤️",
+        emoji: "😊",
+        bg: "from-pink-100 to-rose-300",
+        border: "border-rose-400",
+        antenna: "❤️"
+    },
+    'gallery': {
+        msg: "¡Mira nuestras fotos favoritas! 😍",
+        emoji: "🤩",
+        bg: "from-blue-100 to-cyan-200",
+        border: "border-cyan-400",
+        antenna: "✨"
+    },
+    'details': {
+        msg: "Aquí tienes toda la información importante 📍",
+        emoji: "🧐",
+        bg: "from-emerald-100 to-teal-200",
+        border: "border-teal-400",
+        antenna: "🔔"
+    },
+    'giff': {
+        msg: "Si deseas hacernos un detalle... 🎁",
+        emoji: "🤑",
+        bg: "from-amber-100 to-yellow-200",
+        border: "border-yellow-400",
+        antenna: "💰"
+    },
+    'rsvp': {
+        msg: "¡Confirma aquí! ¡Te esperamos! 🥳",
+        emoji: "💃",
+        bg: "from-purple-200 to-fuchsia-300",
+        border: "border-fuchsia-500",
+        antenna: "🎉"
+    }
+};
+
+function transformRobot(id) {
+    const theme = sectionThemes[id];
+    if (!theme) return;
+
+    // 1. Mostrar la burbuja si estaba oculta y no quitarla más
+    speechBubble.style.opacity = '1';
+    speechBubble.style.transform = 'scale(1)';
+
+    // 2. Cambio de Emoji con pequeño salto
+    emoji.style.transform = "scale(0)";
+    setTimeout(() => {
+        emoji.innerText = theme.emoji;
+        emoji.style.transform = "scale(1)";
+        speechText.innerText = theme.msg; // Cambia el texto directo
+    }, 200);
+
+    // 3. Cambiar Colores del Cuerpo
+    face.className = `w-20 h-20 bg-gradient-to-br ${theme.bg} rounded-[30px] shadow-2xl flex items-center justify-center border-b-4 ${theme.border} transition-all duration-700 ease-in-out`;
+    antenna.innerText = theme.antenna;
+}
+
+// Detector de Scroll mejorado
+let activeSection = "";
+window.addEventListener('scroll', () => {
+    const sections = Object.keys(sectionThemes);
+    let currentInView = "";
+
+    sections.forEach(id => {
+        const el = document.querySelector(`[data-section="${id}"]`);
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            // Detecta si la sección ocupa la parte central de la pantalla
+            if (rect.top < window.innerHeight * 0.6 && rect.bottom > window.innerHeight * 0.4) {
+                currentInView = id;
+            }
+        }
+    });
+
+    if (currentInView && activeSection !== currentInView) {
+        activeSection = currentInView;
+        transformRobot(currentInView);
+    }
+});
+
+// Interacción al click: Un guiño juguetón
+document.getElementById('robotCharacter').addEventListener('click', () => {
+    const currentEmoji = emoji.innerText;
+    emoji.innerText = "😘";
+    setTimeout(() => emoji.innerText = currentEmoji, 1500);
+});
+
+// Iniciar con el primer mensaje
+setTimeout(() => transformRobot('hero'), 1000);
+</script>
 
     <!-- FOOTER -->
     <footer class="py-16 text-center bg-white border-t border-stone-100 relative z-10">
