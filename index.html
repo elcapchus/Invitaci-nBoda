@@ -733,7 +733,7 @@
 </script>
 
     <!-- SCRIPTS -->
-    <script type="module">
+        <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -745,86 +745,106 @@
             projectId: "boda-aa69f"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const auth = getAuth(app);
-        signInAnonymously(auth);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+signInAnonymously(auth);
 
-        const invitadosRef = ref(db, "invitados");
-        let listaInvitados = [];
-        let invitadoActualId = null;
+const invitadosRef = ref(db, "invitados");
+let listaInvitados = [];
+let invitadoActualId = null;
 
-        onValue(invitadosRef, (snapshot) => {
-            listaInvitados = [];
-            snapshot.forEach(child => {
-                listaInvitados.push({ id: child.key, ...child.val() });
-            });
-            if (invitadoActualId) {
-                const act = listaInvitados.find(i => i.id === invitadoActualId);
-                if (act) renderInvitado(act);
-            }
-        });
+onValue(invitadosRef, (snapshot) => {
+    listaInvitados = [];
+    snapshot.forEach(child => {
+        listaInvitados.push({ id: child.key, ...child.val() });
+    });
+    if (invitadoActualId) {
+        const act = listaInvitados.find(i => i.id === invitadoActualId);
+        if (act) renderInvitado(act);
+    }
+});
 
-        // Buscador optimizado
-        const input = document.getElementById("inputNombre");
-        const res = document.getElementById("listaResultados");
+// Buscador optimizado para Principales y Acompañantes
+const input = document.getElementById("inputNombre");
+const res = document.getElementById("listaResultados");
 
-        input.addEventListener("input", (e) => {
-            const txt = e.target.value.toLowerCase().trim();
-            res.innerHTML = "";
-            if (txt.length < 2) { res.classList.add("hidden"); return; }
+input.addEventListener("input", (e) => {
+    const txt = e.target.value.toLowerCase().trim();
+    res.innerHTML = "";
+    if (txt.length < 2) { res.classList.add("hidden"); return; }
 
-            const filtrados = listaInvitados.filter(i => i.nombre.toLowerCase().includes(txt)).slice(0, 5);
-            if (!filtrados.length) { res.classList.add("hidden"); return; }
+    // Filtrar: busca en el nombre principal O en la lista de acompañantes
+    const filtrados = listaInvitados.filter(inv => {
+        const nombrePrincipal = inv.nombre.toLowerCase().includes(txt);
+        const nombreAcompanante = (inv.acompanantes || []).some(a => 
+            a.nombre.toLowerCase().includes(txt)
+        );
+        return nombrePrincipal || nombreAcompanante;
+    }).slice(0, 5);
 
-            res.classList.remove("hidden");
-            filtrados.forEach(inv => {
-                const li = document.createElement("li");
-                li.className = "p-3 hover:bg-stone-50 cursor-pointer text-sm border-b border-stone-50 last:border-0";
-                li.textContent = inv.nombre;
-                li.onclick = () => {
-                    invitadoActualId = inv.id;
-                    input.value = inv.nombre;
-                    res.classList.add("hidden");
-                    renderInvitado(inv);
-                };
-                res.appendChild(li);
-            });
-        });
+    if (!filtrados.length) { res.classList.add("hidden"); return; }
 
-        function renderInvitado(invitado) {
-            document.getElementById("nombreConfirmado").textContent = invitado.nombre;
-            document.getElementById("infoCupos").textContent = `${invitado.entradas || 1} Lugares reservados`;
-            const listaAcom = document.getElementById("listaAcompanantes");
-            listaAcom.innerHTML = "";
-            
-            (invitado.acompanantes || []).forEach((a, idx) => {
-                const d = document.createElement("div");
-                d.className = "flex justify-between items-center bg-stone-50 p-3 rounded-lg text-xs";
-                d.innerHTML = `<span>${a.nombre}</span> <button class="text-rose-400 hover:underline">Remover</button>`;
-                d.querySelector("button").onclick = () => {
-                    if(confirm("¿Eliminar acompañante?")){
-                        const nuevos = [...invitado.acompanantes];
-                        nuevos.splice(idx, 1);
-                        update(ref(db, "invitados/" + invitado.id), { 
-                            acompanantes: nuevos, 
-                            entradas: 1 + nuevos.length 
-                        });
-                    }
-                };
-                listaAcom.appendChild(d);
-            });
-            document.getElementById("datosInvitado").classList.remove("hidden");
+    res.classList.remove("hidden");
+    filtrados.forEach(inv => {
+        const li = document.createElement("li");
+        li.className = "p-3 hover:bg-stone-50 cursor-pointer text-sm border-b border-stone-50 last:border-0";
+        
+        // Si la coincidencia fue por un acompañante, mostramos una pequeña ayuda visual
+        const matchAcomp = (inv.acompanantes || []).find(a => a.nombre.toLowerCase().includes(txt));
+        if (matchAcomp && !inv.nombre.toLowerCase().includes(txt)) {
+            li.innerHTML = `<div>${inv.nombre}</div><div class="text-[10px] text-stone-400">Incluye a ${matchAcomp.nombre}</div>`;
+        } else {
+            li.textContent = inv.nombre;
         }
 
-        window.confirmarAsistencia = () => {
-            if (!invitadoActualId) return;
-            const asist = document.getElementById("selectAsistencia").value === "si";
-            update(ref(db, "invitados/" + invitadoActualId), { confirmado: asist })
-                .then(() => alert("¡Gracias! Confirmación recibida ❤️"));
+        li.onclick = () => {
+            invitadoActualId = inv.id;
+            input.value = inv.nombre;
+            res.classList.add("hidden");
+            renderInvitado(inv);
         };
-    </script>
+        res.appendChild(li);
+    });
+});
 
+function renderInvitado(invitado) {
+    document.getElementById("nombreConfirmado").textContent = invitado.nombre;
+    
+    // Calculamos total: El principal (1) + acompañantes
+    const totalEntradas = 1 + (invitado.acompanantes ? invitado.acompanantes.length : 0);
+    document.getElementById("infoCupos").textContent = `${totalEntradas} Lugares reservados`;
+    
+    const listaAcom = document.getElementById("listaAcompanantes");
+    listaAcom.innerHTML = "";
+    
+    (invitado.acompanantes || []).forEach((a, idx) => {
+        const d = document.createElement("div");
+        d.className = "flex justify-between items-center bg-stone-50 p-3 rounded-lg text-xs mb-2";
+        d.innerHTML = `<span>${a.nombre}</span> <button class="text-rose-400 hover:underline">Remover</button>`;
+        d.querySelector("button").onclick = () => {
+            if(confirm(`¿Eliminar a ${a.nombre}?`)){
+                const nuevos = [...invitado.acompanantes];
+                nuevos.splice(idx, 1);
+                update(ref(db, "invitados/" + invitado.id), { 
+                    acompanantes: nuevos, 
+                    entradas: 1 + nuevos.length 
+                });
+            }
+        };
+        listaAcom.appendChild(d);
+    });
+    document.getElementById("datosInvitado").classList.remove("hidden");
+}
+
+window.confirmarAsistencia = () => {
+    if (!invitadoActualId) return;
+    const asist = document.getElementById("selectAsistencia").value === "si";
+    update(ref(db, "invitados/" + invitadoActualId), { confirmado: asist })
+        .then(() => alert("¡Gracias! Confirmación recibida ❤️"));
+};
+    </script>
+  
     <script>
         lucide.createIcons();
 
