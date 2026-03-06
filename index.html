@@ -741,61 +741,91 @@
 
     <!-- SCRIPTS -->
         <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+     
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBeVis1IYntFgRenEbKqurxF0tt3Jst-SY",
-            authDomain: "boda-aa69f.firebaseapp.com",
-            databaseURL: "https://boda-aa69f-default-rtdb.firebaseio.com",
-            projectId: "boda-aa69f"
-        };
 
-const loader = document.getElementById('initial-loader');
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBeVis1IYntFgRenEbKqurxF0tt3Jst-SY",
+    authDomain: "boda-aa69f.firebaseapp.com",
+    databaseURL: "https://boda-aa69f-default-rtdb.firebaseio.com",
+    projectId: "boda-aa69f"
+};
+
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
-signInAnonymously(auth);
-
 const invitadosRef = ref(db, "invitados");
+
+const loader = document.getElementById('initial-loader');
 let listaInvitados = [];
 let invitadoActualId = null;
 
-// Usamos get(ref(...)) para la carga INICIAL rápida, luego onValue para cambios en vivo
-import { get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+// 1. Esperamos auth completa (anónima)
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        console.log("Usuario autenticado (anónimo):", user.uid);
+        await cargarDatosIniciales();
+    } else {
+        console.log("Iniciando auth anónima...");
+        signInAnonymously(auth)
+            .then(() => console.log("Auth anónima exitosa"))
+            .catch(err => {
+                console.error("Error auth anónima:", err.code, err.message);
+                mostrarErrorLoader("No pudimos conectar. Verifica internet o intenta más tarde.");
+            });
+    }
+});
 
-// Función de carga principal
+// 2. Carga inicial con get() + fallback
 async function cargarDatosIniciales() {
     try {
         const snapshot = await get(invitadosRef);
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            listaInvitados = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-            console.log("Datos cargados prioritariamente ✅");
-        }
+        procesarSnapshot(snapshot);
         
-        // Una vez que tenemos los datos, ocultamos el loader con un efecto suave
-        loader.style.opacity = '0';
-        setTimeout(() => loader.style.display = 'none', 700);
-
-        // Activamos el robot después de cargar
-        setTimeout(() => transformRobot('hero'), 1500);
-
+        // Ocultar loader SIEMPRE después de intentar (éxito o fallo)
+        ocultarLoader();
     } catch (error) {
-        console.error("Error en carga inicial:", error);
-        // Opcional: mostrar mensaje de error si no hay internet
+        console.error("Error al leer invitados:", error);
+        ocultarLoader(); // importante: ocultar aunque falle
+        mostrarErrorLoader("Problema al cargar la lista. Intenta refrescar.");
     }
 }
 
-// Ejecutar carga
-cargarDatosIniciales();
-
-// Mantener onValue solo para actualizaciones en tiempo real (sin afectar el flujo inicial)
-onValue(invitadosRef, (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
+function procesarSnapshot(snapshot) {
+    if (snapshot.exists()) {
+        const data = snapshot.val();
         listaInvitados = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        console.log(`Cargados ${listaInvitados.length} invitados`);
+    } else {
+        console.warn("No hay datos en /invitados");
+        listaInvitados = [];
+    }
+}
+
+function ocultarLoader() {
+    loader.style.opacity = '0';
+    setTimeout(() => { loader.style.display = 'none'; }, 700);
+}
+
+function mostrarErrorLoader(mensaje) {
+    loader.innerHTML = `
+        <div class="text-red-400 text-xl font-serif italic">${mensaje}</div>
+        <p class="mt-4 text-amber-200/80">Refresca la página o verifica tu conexión</p>
+    `;
+    loader.style.opacity = '1'; // mantener visible para que vea el error
+}
+
+// 3. Listener en vivo (solo actualizaciones)
+onValue(invitadosRef, (snapshot) => {
+    procesarSnapshot(snapshot);
+    // Si ya hay invitado seleccionado → re-render
+    if (invitadoActualId) {
+        const inv = listaInvitados.find(i => i.id === invitadoActualId);
+        if (inv) renderInvitado(inv);
     }
 });
 
