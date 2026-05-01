@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Navegación Boda - Estilo iOS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;700&family=Playfair+Display:wght@700&display=swap');
+        
+        :root {
+            --ios-blue: #007AFF;
+            --wedding-gold: #D4AF37;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+        }
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f2f2f7;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Glassmorphism Refinado */
+        .ios-glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        #permission-overlay {
+            position: fixed;
+            inset: 0;
+            background: #fff;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            z-index: 1;
+        }
+
+        /* Panel Superior de Instrucciones (Giro a Giro) */
+        .instruction-panel {
+            position: absolute;
+            top: 20px;
+            left: 16px;
+            right: 16px;
+            z-index: 100;
+            border-radius: 24px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transform: translateY(-120%);
+            transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .instruction-panel.active {
+            transform: translateY(0);
+        }
+
+        /* Panel Inferior Principal */
+        .info-panel {
+            position: absolute;
+            bottom: 30px;
+            left: 16px;
+            right: 16px;
+            border-radius: 32px;
+            z-index: 100;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+            padding: 24px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .ios-handle {
+            width: 40px;
+            height: 5px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin: -10px auto 18px auto;
+        }
+
+        .btn-apple {
+            background: var(--ios-blue);
+            color: white;
+            padding: 16px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 17px;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-apple:active { transform: scale(0.97); opacity: 0.8; }
+
+        .btn-secondary {
+            background: rgba(0, 122, 255, 0.1);
+            color: var(--ios-blue);
+            padding: 14px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .car-container {
+            transition: transform 0.5s linear;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .car-emoji {
+            font-size: 42px;
+            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.3));
+        }
+
+        .pulse-signal {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 122, 255, 0.2);
+            border-radius: 50%;
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .leaflet-control-attribution { display: none !important; }
+        .leaflet-routing-container { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- Overlay Inicial -->
+    <div id="permission-overlay">
+        <div class="mb-12">
+            <div class="w-24 h-24 bg-blue-50 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8">
+                <i class="fas fa-location-arrow text-blue-500 text-4xl animate-bounce"></i>
+            </div>
+            <h1 class="text-4xl font-bold text-slate-900 tracking-tight mb-3">Guía en tiempo real</h1>
+            <p class="text-slate-500 max-w-xs mx-auto text-lg leading-relaxed">Activa el GPS para guiarte paso a paso hasta la boda.</p>
+        </div>
+        <button onclick="solicitarUbicacion()" class="bg-black text-white px-14 py-6 rounded-3xl font-bold shadow-2xl active:scale-95 transition-all text-xl">
+            Iniciar Navegación
+        </button>
+    </div>
+
+    <!-- Panel de Giro a Giro (Superior) -->
+    <div id="instruction-card" class="instruction-panel ios-glass">
+        <div class="w-14 h-14 bg-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
+            <i id="instruction-icon" class="fas fa-arrow-up text-white text-2xl"></i>
+        </div>
+        <div>
+            <p id="next-step-dist" class="text-[12px] font-bold text-blue-600 uppercase tracking-widest">Calculando...</p>
+            <p id="instruction-text" class="text-[17px] font-bold text-slate-900 leading-tight">Obteniendo indicaciones...</p>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <!-- Panel de Información (Inferior) -->
+    <div class="info-panel ios-glass">
+        <div class="ios-handle"></div>
+        
+        <div class="flex justify-between items-start mb-5">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Destino Final</h2>
+                <div class="flex items-center gap-2 mt-1">
+                    <span id="distancia-txt" class="text-slate-600 font-semibold text-base underline decoration-blue-200">Calculando ruta...</span>
+                </div>
+            </div>
+            <div id="live-badge" class="hidden flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
+                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span class="text-[10px] font-black text-green-700 tracking-wider uppercase">En Vivo</span>
+            </div>
+        </div>
+
+        <!-- Nota Importante -->
+        <div class="bg-amber-50 border border-amber-100 p-4 rounded-2xl mb-5 flex gap-3">
+            <i class="fas fa-circle-info text-amber-500 mt-1"></i>
+            <p class="text-xs text-amber-800 font-medium leading-relaxed">
+                <span class="font-bold">NOTA:</span> Un Ujier estará presente en la entrada del evento para asistirte. Si tienes problemas con la navegación, no dudes en pedir ayuda.
+            </p>
+        </div>
+
+        <div class="space-y-3">
+            <button id="btn-start-nav" onclick="activarSeguimientoTotal()" class="btn-apple w-full">
+                <i class="fas fa-location-crosshairs"></i>
+                Centrar mi posición
+            </button>
+            
+            <a href="https://www.google.com/maps/dir/Iglesia+El+Valle+Del+Jord%C3%A1n,+4X8C%2B5QX,+Av.+Parque+Zonal,+Carabayllo+15318/-11.6961235,-76.8487518/-11.6959217,-76.8489077/@-11.8731698,-77.0265322,2515m/data=!3m1!1e3!4m15!4m14!1m10!1m1!1s0x9105d095fc08278d:0xe5d895936844abc6!2m2!1d-77.0281012!2d-11.8846285!3m4!1m2!1d-77.0205148!2d-11.8706788!3s0x9105d0afc7795053:0xb060f5c08ef9f2a4!1m0!1m0!3e0?authuser=0&entry=ttu&g_ep=EgoyMDI2MDQyOS4wIKXMDSoASAFQAw%3D%3D" 
+               target="_blank" class="btn-secondary">
+                <i class="fab fa-google"></i>
+                Abrir en Google Maps
+            </a>
+            
+            <div class="text-center pt-2">
+                <p id="accuracy-txt" class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Señal GPS: --</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    
+    <script>
+        let map, userMarker, routingControl, watchId;
+        let isFollowing = false;
+        let lastLat, lastLng;
+        const coordsLlegada = [-11.696194, -76.848611];
+        const NAV_ZOOM = 17;
+
+        window.onload = function() {
+            map = L.map('map', { 
+                zoomControl: false,
+                inertia: true,
+                inertiaDeceleration: 3000,
+                tap: true
+            }).setView(coordsLlegada, 15);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                maxZoom: 20
+            }).addTo(map);
+
+            const destIcon = L.divIcon({
+                className: 'dest-pin',
+                html: `<div style="background:var(--wedding-gold); width:32px; height:32px; border-radius:50%; border:4px solid white; box-shadow:0 8px 24px rgba(212,175,55,0.6); display:flex; align-items:center; justify-content:center;"><i class="fas fa-heart" style="color:white; font-size:14px;"></i></div>`,
+                iconSize: [32, 32]
+            });
+            L.marker(coordsLlegada, {icon: destIcon}).addTo(map);
+            
+            map.on('dragstart', () => {
+                if (isFollowing) {
+                    isFollowing = false;
+                    document.getElementById('btn-start-nav').innerHTML = '<i class="fas fa-crosshairs"></i> Reanudar seguimiento';
+                    document.getElementById('live-badge').classList.add('hidden');
+                }
+            });
+        };
+
+        function solicitarUbicacion() {
+            document.getElementById('permission-overlay').style.opacity = '0';
+            setTimeout(() => { document.getElementById('permission-overlay').remove(); }, 600);
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        actualizarPosicion(pos);
+                        activarSeguimientoTotal();
+                    },
+                    (err) => { document.getElementById('distancia-txt').innerText = "Habilita el GPS"; },
+                    { enableHighAccuracy: true }
+                );
+            }
+        }
+
+        function activarSeguimientoTotal() {
+            isFollowing = true;
+            document.getElementById('btn-start-nav').innerHTML = '<i class="fas fa-navigation text-xs"></i> En navegación';
+            document.getElementById('live-badge').classList.remove('hidden');
+            document.getElementById('instruction-card').classList.add('active');
+            
+            if (lastLat && lastLng) {
+                map.flyTo([lastLat, lastLng], NAV_ZOOM, { duration: 1.5 });
+            }
+            iniciarWatch();
+        }
+
+        function actualizarPosicion(pos) {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            const accuracy = pos.coords.accuracy.toFixed(0);
+            const userCoords = [lat, lng];
+            
+            document.getElementById('accuracy-txt').innerText = `Precisión: ${accuracy} metros`;
+
+            let rotation = 0;
+            if (lastLat && lastLng) {
+                const dy = lat - lastLat;
+                const dx = lng - lastLng;
+                if (Math.abs(dy) > 0.00001 || Math.abs(dx) > 0.00001) {
+                    rotation = Math.atan2(dy, dx) * 180 / Math.PI;
+                    rotation = 90 - rotation;
+                }
+            }
+
+            lastLat = lat;
+            lastLng = lng;
+
+            if (!userMarker) {
+                const carIcon = L.divIcon({
+                    className: 'car-container',
+                    html: `<div class="pulse-signal"></div><div class="car-emoji" id="car-img">🚗</div>`,
+                    iconSize: [60, 60]
+                });
+                userMarker = L.marker(userCoords, {icon: carIcon}).addTo(map);
+                trazarRuta(userCoords, coordsLlegada);
+            } else {
+                userMarker.setLatLng(userCoords);
+                const carEl = document.getElementById('car-img');
+                if (carEl) carEl.style.transform = `rotate(${rotation}deg)`;
+                
+                if (routingControl) {
+                    routingControl.spliceWaypoints(0, 1, L.latLng(userCoords));
+                }
+            }
+
+            if (isFollowing) {
+                map.panTo(userCoords, { animate: true, duration: 1.5 });
+            }
+        }
+
+        function iniciarWatch() {
+            if (watchId) navigator.geolocation.clearWatch(watchId);
+            watchId = navigator.geolocation.watchPosition(
+                (pos) => actualizarPosicion(pos),
+                null,
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+            );
+        }
+
+        function trazarRuta(inicio, fin) {
+            if (routingControl) map.removeControl(routingControl);
+
+            routingControl = L.Routing.control({
+                waypoints: [L.latLng(inicio[0], inicio[1]), L.latLng(fin[0], fin[1])],
+                lineOptions: {
+                    styles: [
+                        { color: '#007AFF', opacity: 0.15, weight: 14 },
+                        { color: '#007AFF', opacity: 1, weight: 6 }
+                    ]
+                },
+                createMarker: () => null,
+                addWaypoints: false,
+                fitSelectedRoutes: false,
+                router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' })
+            }).addTo(map);
+
+            routingControl.on('routesfound', function(e) {
+                const route = e.routes[0];
+                const summary = route.summary;
+                const tiempo = Math.round(summary.totalTime / 60);
+                
+                document.getElementById('distancia-txt').innerHTML = 
+                    `<span class="text-blue-600 font-bold">${tiempo} min</span> restantes`;
+
+                // Actualizar la guía de giro con el primer paso real
+                if (route.instructions && route.instructions.length > 0) {
+                    const next = route.instructions[0];
+                    document.getElementById('instruction-text').innerText = traducirManiobra(next.text);
+                    document.getElementById('next-step-dist').innerText = `En ${Math.round(next.distance)} metros`;
+                    actualizarIcono(next.type);
+                }
+            });
+        }
+
+        function traducirManiobra(text) {
+            // Traducción robusta de maniobras y puntos cardinales
+            return text.replace(/\bHead\b/g, 'Dirígete')
+                       .replace(/\bTurn left\b/g, 'Gira a la izquierda')
+                       .replace(/\bTurn right\b/g, 'Gira a la derecha')
+                       .replace(/\bKeep left\b/g, 'Mantente a la izquierda')
+                       .replace(/\bKeep right\b/g, 'Mantente a la derecha')
+                       .replace(/\bat the roundabout\b/g, 'en la rotonda')
+                       .replace(/\bonto\b/g, 'hacia')
+                       .replace(/\bwest\b/gi, 'al oeste')
+                       .replace(/\beast\b/gi, 'al este')
+                       .replace(/\bnorth\b/gi, 'al norte')
+                       .replace(/\bsouth\b/gi, 'al sur')
+                       .replace(/\bon\b/g, 'por');
+        }
+
+        function actualizarIcono(type) {
+            const icon = document.getElementById('instruction-icon');
+            if (type.includes('Left')) icon.className = "fas fa-arrow-turn-up fa-flip-horizontal text-white text-2xl";
+            else if (type.includes('Right')) icon.className = "fas fa-arrow-turn-up text-white text-2xl";
+            else icon.className = "fas fa-arrow-up text-white text-2xl";
+        }
+    </script>
+</body>
+</html>
